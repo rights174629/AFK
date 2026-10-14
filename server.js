@@ -197,6 +197,9 @@ setInterval(() => {
 // --- 정적 파일 서빙 및 라우팅 (GitHub Pages 구조 호환) ---
 app.use(express.static(__dirname));
 
+// 파비콘 404 방지
+app.get('/favicon.ico', (req, res) => res.status(204).end());
+
 // 메인 포털 허브 (AFK)
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
