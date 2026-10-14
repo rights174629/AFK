@@ -15,6 +15,17 @@ const io = new Server(server, {
 
 const PORT = process.env.PORT || 3000;
 
+// Render 리버스 프록시 신뢰 설정
+app.enable('trust proxy');
+
+// HTTP 접속 시 자동으로 HTTPS로 리다이렉트 (주의 요함 경고 방지)
+app.use((req, res, next) => {
+  if (req.secure || req.headers['x-forwarded-proto'] === 'https' || req.hostname === 'localhost' || req.hostname === '127.0.0.1') {
+    return next();
+  }
+  return res.redirect(301, `https://${req.headers.host}${req.url}`);
+});
+
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');
   res.header('Access-Control-Allow-Headers', '*');
