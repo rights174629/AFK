@@ -13,11 +13,17 @@ document.addEventListener('DOMContentLoaded', () => {
   let serverTarget;
   if (queryServer) {
     serverTarget = queryServer;
+  } else if (window.location.protocol === 'https:') {
+    // HTTPS 배포 환경에서는 Mixed Content 방지를 위해 항상 동일한 안전한 호스트 사용
+    // 만약 savedServer가 https://로 시작할 때만 허용
+    if (savedServer && savedServer.startsWith('https://')) {
+      serverTarget = savedServer;
+    } else {
+      serverTarget = undefined;
+    }
   } else if (savedServer) {
     serverTarget = savedServer;
   } else if (isWebProtocol) {
-    // Render 배포 사이트, 로컬호스트, 스마트폰 로컬 IP 접속 등:
-    // 웹으로 접속한 모든 경우 현재 호스트(Render) 그대로 자동 연결!
     serverTarget = undefined;
   } else {
     // file:// 로 직접 열었을 때 로컬 폴백
