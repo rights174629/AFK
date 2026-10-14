@@ -188,20 +188,37 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // 5. 오디오 자동재생 해제 오버레이
+  // 5. 오디오 자동재생 해제 오버레이 및 전역 터치/클릭 언뮤트
   function unlockAudio() {
-    if (window.fireAudio) window.fireAudio.init();
+    if (window.fireAudio) {
+      window.fireAudio.init();
+    }
     if (audioPromptOverlay) {
       audioPromptOverlay.style.opacity = '0';
       setTimeout(() => {
         audioPromptOverlay.style.display = 'none';
-      }, 500);
+      }, 400);
     }
   }
 
   if (audioPromptOverlay) {
     audioPromptOverlay.addEventListener('click', unlockAudio);
+    audioPromptOverlay.addEventListener('touchstart', unlockAudio, { passive: true });
   }
+
+  // 화면 어디든 첫 인터랙션(터치, 클릭, 키입력) 시 무조건 AudioContext 깨우기
+  const globalAudioWakeup = () => {
+    if (window.fireAudio) {
+      if (!window.fireAudio.isInitialized) {
+        unlockAudio();
+      } else if (window.fireAudio.ctx && window.fireAudio.ctx.state === 'suspended') {
+        window.fireAudio.ctx.resume();
+      }
+    }
+  };
+  document.addEventListener('pointerdown', globalAudioWakeup, { once: true });
+  document.addEventListener('touchstart', globalAudioWakeup, { once: true, passive: true });
+  document.addEventListener('keydown', globalAudioWakeup, { once: true });
 
   // 6. 음소거 토글
   if (muteBtn) {
