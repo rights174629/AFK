@@ -1,7 +1,7 @@
 {
-  "fireLife": 9.156399999999904,
-  "status": "DYING",
-  "globalStartTime": 1791980711550,
-  "totalLogs": 3,
-  "lastSavedAt": 1791982942258
+  "fireLife": 60.87999999999993,
+  "status": "STEADY",
+  "globalStartTime": 1791983255265,
+  "totalLogs": 5,
+  "lastSavedAt": 1791983762908
 }

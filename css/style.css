@@ -541,3 +541,145 @@ body {
   background: #38bdf8;
   transition: width 0.3s ease;
 }
+
+/* =========================================================
+   모바일 & 태블릿 반응형 뷰포트 최적화 (Mobile Responsive)
+   ========================================================= */
+@media (max-width: 768px) {
+  /* 1. 상단 바 겹침 해결 */
+  .top-bar {
+    padding: 10px 12px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .center-lifetime {
+    order: -1;
+    width: 100%;
+    margin-bottom: 2px;
+    text-align: center;
+  }
+
+  .lifetime-counter {
+    font-size: 14px;
+    letter-spacing: 1px;
+  }
+
+  .lifetime-label {
+    font-size: 8px;
+    letter-spacing: 1px;
+    margin-bottom: 2px;
+  }
+
+  .badge {
+    padding: 6px 8px;
+    font-size: 9px;
+    gap: 5px;
+  }
+
+  .icon-btn {
+    padding: 6px 8px;
+    font-size: 9px;
+    gap: 4px;
+  }
+
+  .top-right-group {
+    gap: 6px;
+  }
+
+  /* 2. 캔버스: 세로 모바일 화면 비율 맞춤 */
+  #canvas-container {
+    align-items: center;
+    justify-content: center;
+  }
+
+  #fire-canvas {
+    width: 100%;
+    height: auto;
+    max-height: 80vh;
+    object-fit: contain;
+  }
+
+  /* 3. 하단 장작 던지기 컨트롤 */
+  .bottom-controls {
+    bottom: max(16px, env(safe-area-inset-bottom, 16px));
+    width: 100%;
+    padding: 0 16px;
+  }
+
+  .fire-health-bar-container {
+    width: min(220px, 80vw);
+    height: 7px;
+  }
+
+  .fire-health-text {
+    font-size: 9px;
+  }
+
+  .log-action-btn {
+    padding: 12px 20px;
+    font-size: 11px;
+    width: min(260px, 85vw);
+    justify-content: center;
+  }
+
+  /* 4. 채팅 위젯: 화면 가림 방지 및 모바일 친화형 배치 */
+  .chat-widget {
+    left: 10px;
+    right: 10px;
+    bottom: max(74px, calc(env(safe-area-inset-bottom, 16px) + 60px));
+    width: auto;
+    max-width: none;
+    z-index: 25;
+  }
+
+  .chat-widget.minimized {
+    transform: translateY(calc(100% - 36px));
+  }
+
+  .chat-header {
+    padding: 8px 12px;
+    font-size: 10px;
+  }
+
+  .chat-messages {
+    height: 120px;
+    padding: 8px;
+  }
+
+  .chat-item {
+    font-size: 11px;
+  }
+
+  .chat-input-row {
+    padding: 6px 8px;
+  }
+
+  .chat-input {
+    font-size: 11px;
+    padding: 5px 8px;
+  }
+
+  .chat-send-btn {
+    padding: 0 10px;
+    font-size: 9px;
+  }
+
+  /* 5. 팝업 카드 */
+  .audio-prompt-card, .extinct-card {
+    padding: 24px 18px;
+    max-width: 90vw;
+  }
+
+  .audio-prompt-title, .extinct-title {
+    font-size: 13px;
+  }
+
+  .audio-prompt-desc, .extinct-stats {
+    font-size: 11px;
+  }
+}
+

@@ -4,9 +4,28 @@
  */
 
 document.addEventListener('DOMContentLoaded', () => {
-  // 소켓 연결 대상 서버 결정 (현재 포트가 3000이 아니거나 file://인 경우에도 localhost:3000으로 강제 연결)
+  // 1. 소켓 서버 대상 주소 스마트 결정 (모바일 Wi-Fi IP, GitHub Pages, 로컬호스트 모두 지원)
+  const urlParams = new URLSearchParams(window.location.search);
+  const queryServer = urlParams.get('server');
+  const savedServer = localStorage.getItem('campfire_custom_server');
+
+  let defaultServer = '';
+  const currentHost = window.location.hostname;
   const isDirect3000 = (window.location.protocol.startsWith('http') && window.location.port === '3000');
-  const serverTarget = isDirect3000 ? undefined : 'http://localhost:3000';
+
+  if (isDirect3000) {
+    defaultServer = undefined; // 현재 호스트 바로 연결
+  } else if (!currentHost || currentHost === 'localhost' || currentHost === '127.0.0.1') {
+    defaultServer = 'http://localhost:3000';
+  } else if (/^\d+\.\d+\.\d+\.\d+$/.test(currentHost)) {
+    // 스마트폰에서 192.168.x.x 로 접속한 경우
+    defaultServer = `http://${currentHost}:3000`;
+  } else {
+    // GitHub Pages (*.github.io) 등 외부에서 접속한 경우
+    defaultServer = 'http://192.168.55.180:3000';
+  }
+
+  let serverTarget = queryServer || savedServer || defaultServer;
 
   let socket;
   if (typeof io !== 'undefined') {
@@ -14,18 +33,35 @@ document.addEventListener('DOMContentLoaded', () => {
       transports: ['websocket', 'polling'],
       reconnection: true,
       reconnectionAttempts: Infinity,
-      reconnectionDelay: 1000,
+      reconnectionDelay: 1500,
       timeout: 10000
     });
 
     socket.on('connect', () => {
-      console.log(`[SOCKET CONNECTED] 실시간 장작불 서버(${serverTarget || '현재 호스트'})에 정상 연결되었습니다! Socket ID: ${socket.id}`);
+      console.log(`[SOCKET CONNECTED] 실시간 서버(${serverTarget || '호스트'})에 연결 완료! ID: ${socket.id}`);
+      const userDot = document.querySelector('.user-indicator-dot');
+      if (userDot) userDot.style.backgroundColor = '#2ecc71';
     });
 
     socket.on('connect_error', (err) => {
-      console.warn('[SOCKET RETRY] 서버 연결 시도 중... (node server.js가 켜져있는지 확인하세요):', err.message);
+      console.warn(`[SOCKET RETRY] 서버(${serverTarget}) 연결 실패:`, err.message);
       const userCountEl = document.getElementById('user-count');
-      if (userCountEl) userCountEl.textContent = '서버 연결 중 (localhost:3000)...';
+      const userDot = document.querySelector('.user-indicator-dot');
+      if (userDot) userDot.style.backgroundColor = '#f59e0b';
+      if (userCountEl) {
+        userCountEl.innerHTML = `<span style="color: #f59e0b;">서버 연결 중 (설정⚙️)</span>`;
+        userCountEl.style.cursor = 'pointer';
+        userCountEl.onclick = () => {
+          const newUrl = prompt(
+            '실시간 백엔드 서버 주소를 입력하세요:\n(같은 Wi-Fi 휴대폰: http://192.168.55.180:3000\n클라우드 배포 시: https://서버주소)',
+            serverTarget || 'http://192.168.55.180:3000'
+          );
+          if (newUrl && newUrl.trim()) {
+            localStorage.setItem('campfire_custom_server', newUrl.trim());
+            window.location.reload();
+          }
+        };
+      }
     });
   } else {
     console.warn('[OFFLINE MODE] Socket.io CDN 로드 실패로 로컬 시뮬레이션 모드로 작동합니다.');
@@ -35,6 +71,13 @@ document.addEventListener('DOMContentLoaded', () => {
       emit: (ev, data) => {}
     };
   }
+
+  // 모바일 화면에서는 초기에 채팅창을 기본 접어두어 불꽃 화면 확보
+  if (window.innerWidth <= 768) {
+    const chatWidget = document.getElementById('chat-widget');
+    if (chatWidget) chatWidget.classList.add('minimized');
+  }
+
 
 
 
