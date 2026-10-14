@@ -8,8 +8,9 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: { origin: '*' },
-  pingInterval: 10000,
-  pingTimeout: 5000
+  pingInterval: 25000,
+  pingTimeout: 20000,
+  transports: ['websocket', 'polling']
 });
 
 const PORT = process.env.PORT || 3000;
@@ -339,9 +340,9 @@ io.on('connection', (socket) => {
 });
 
 // --- 서버 시작 ---
-server.listen(PORT, () => {
+server.listen(PORT, '0.0.0.0', () => {
   console.log(`===============================================`);
   console.log(`🔥 [Keep the Fire Alive] 서버가 가동되었습니다.`);
-  console.log(`🌐 접속 주소: http://localhost:${PORT}`);
+  console.log(`🌐 포트: ${PORT} (0.0.0.0 바인딩 완료)`);
   console.log(`===============================================`);
 });

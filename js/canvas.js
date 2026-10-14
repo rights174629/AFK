@@ -14,9 +14,9 @@ class FireCanvasRenderer {
     this.canvas.width = this.width;
     this.canvas.height = this.height;
 
-    // 화로 중심점
+    // 화로 중심점 (모바일 및 데스크톱 균형 최적화)
     this.hearthX = 160;
-    this.hearthY = 135;
+    this.hearthY = 125;
 
     // 현재 화력 수치 및 보간 대상
     this.currentLife = 75.0;
@@ -176,9 +176,9 @@ class FireCanvasRenderer {
 
     // 3. 픽셀 지면 베이스 렌더링
     ctx.fillStyle = '#0b0d13';
-    ctx.fillRect(0, 145, this.width, 35);
+    ctx.fillRect(0, 136, this.width, 44);
     ctx.fillStyle = '#141824';
-    ctx.fillRect(0, 145, this.width, 2);
+    ctx.fillRect(0, 136, this.width, 2);
 
     // 4. 화로 및 장작더미 도트 그리기
     this.drawHearth(ctx);

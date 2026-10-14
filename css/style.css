@@ -22,14 +22,16 @@
   user-select: none;
 }
 
-body {
+html, body {
+  width: 100%;
+  height: 100%;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+  position: fixed;
   background-color: var(--bg-deep);
   color: var(--text-main);
   font-family: var(--font-body);
-  overflow: hidden;
-  width: 100vw;
-  height: 100vh;
-  position: relative;
 }
 
 /* 캔버스 뷰포트 */
@@ -37,8 +39,9 @@ body {
   position: absolute;
   top: 0;
   left: 0;
-  width: 100vw;
-  height: 100vh;
+  width: 100%;
+  height: 100%;
+  height: 100dvh;
   z-index: 1;
   display: flex;
   align-items: center;
@@ -603,15 +606,28 @@ body {
     object-fit: contain;
   }
 
-  /* 3. 하단 장작 던지기 컨트롤 */
+  /* 3. 하단 장작 던지기 컨트롤 (모바일 네비게이션 바 및 홈 인디케이터 배려) */
   .bottom-controls {
-    bottom: max(16px, env(safe-area-inset-bottom, 16px));
+    position: absolute;
+    bottom: calc(30px + env(safe-area-inset-bottom, 14px));
+    left: 50%;
+    transform: translateX(-50%);
     width: 100%;
     padding: 0 16px;
+    z-index: 50; /* 항상 최상위에 위치하여 어떤 요소에도 가려지지 않음 */
+    pointer-events: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .bottom-controls > * {
+    pointer-events: auto;
   }
 
   .fire-health-bar-container {
-    width: min(220px, 80vw);
+    width: min(230px, 75vw);
     height: 7px;
   }
 
@@ -620,20 +636,21 @@ body {
   }
 
   .log-action-btn {
-    padding: 12px 20px;
-    font-size: 11px;
-    width: min(260px, 85vw);
+    padding: 13px 24px;
+    font-size: 12px;
+    width: min(250px, 80vw);
     justify-content: center;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.8), 0 0 15px rgba(255, 120, 30, 0.35);
   }
 
-  /* 4. 채팅 위젯: 화면 가림 방지 및 모바일 친화형 배치 */
+  /* 4. 채팅 위젯: 장작 버튼 위쪽에 얌전하게 위치하여 조작 방해 제로 */
   .chat-widget {
-    left: 10px;
-    right: 10px;
-    bottom: max(74px, calc(env(safe-area-inset-bottom, 16px) + 60px));
+    left: 12px;
+    right: 12px;
+    bottom: calc(105px + env(safe-area-inset-bottom, 14px));
     width: auto;
     max-width: none;
-    z-index: 25;
+    z-index: 45;
   }
 
   .chat-widget.minimized {

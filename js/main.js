@@ -4,28 +4,25 @@
  */
 
 document.addEventListener('DOMContentLoaded', () => {
-  // 1. 소켓 서버 대상 주소 스마트 결정 (모바일 Wi-Fi IP, GitHub Pages, 로컬호스트 모두 지원)
+  // 1. 소켓 서버 대상 주소 스마트 결정 (Render 클라우드 호스팅, 모바일, 로컬 모두 지원)
   const urlParams = new URLSearchParams(window.location.search);
   const queryServer = urlParams.get('server');
   const savedServer = localStorage.getItem('campfire_custom_server');
+  const isWebProtocol = window.location.protocol.startsWith('http');
 
-  let defaultServer = '';
-  const currentHost = window.location.hostname;
-  const isDirect3000 = (window.location.protocol.startsWith('http') && window.location.port === '3000');
-
-  if (isDirect3000) {
-    defaultServer = undefined; // 현재 호스트 바로 연결
-  } else if (!currentHost || currentHost === 'localhost' || currentHost === '127.0.0.1') {
-    defaultServer = 'http://localhost:3000';
-  } else if (/^\d+\.\d+\.\d+\.\d+$/.test(currentHost)) {
-    // 스마트폰에서 192.168.x.x 로 접속한 경우
-    defaultServer = `http://${currentHost}:3000`;
+  let serverTarget;
+  if (queryServer) {
+    serverTarget = queryServer;
+  } else if (savedServer) {
+    serverTarget = savedServer;
+  } else if (isWebProtocol) {
+    // Render 배포 사이트, 로컬호스트, 스마트폰 로컬 IP 접속 등:
+    // 웹으로 접속한 모든 경우 현재 호스트(Render) 그대로 자동 연결!
+    serverTarget = undefined;
   } else {
-    // GitHub Pages (*.github.io) 등 외부에서 접속한 경우
-    defaultServer = 'http://192.168.55.180:3000';
+    // file:// 로 직접 열었을 때 로컬 폴백
+    serverTarget = 'http://localhost:3000';
   }
-
-  let serverTarget = queryServer || savedServer || defaultServer;
 
   let socket;
   if (typeof io !== 'undefined') {
