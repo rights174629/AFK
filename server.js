@@ -180,17 +180,17 @@ setInterval(() => {
   });
 }, 1000);
 
-// --- 정적 파일 서빙 및 라우팅 ---
-app.use(express.static(path.join(__dirname, 'public')));
+// --- 정적 파일 서빙 및 라우팅 (GitHub Pages 구조 호환) ---
+app.use(express.static(__dirname));
 
 // 메인 포털 허브 (AFK)
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  res.sendFile(path.join(__dirname, 'index.html'));
 });
 
 // 실시간 장작불 서비스 (Keep the Fire Alive)
 app.get(['/fire', '/fire.html'], (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'fire.html'));
+  res.sendFile(path.join(__dirname, 'fire.html'));
 });
 
 
