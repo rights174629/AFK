@@ -17,7 +17,7 @@
   <!-- HTTPS 자동 보안 연결 및 주의 요함 방지 -->
   <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
   <script>
-    if (location.protocol === 'https:' && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
+    if (location.protocol === 'http:' && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
       location.replace('https://' + location.host + location.pathname + location.search + location.hash);
     }
   </script>

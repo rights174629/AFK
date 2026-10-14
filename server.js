@@ -30,6 +30,8 @@ app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');
   res.header('Access-Control-Allow-Headers', '*');
   res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  // 브라우저가 항상 HTTPS로 접속하도록 HSTS 헤더 적용
+  res.header('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
   next();
 });
 

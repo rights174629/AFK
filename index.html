@@ -13,6 +13,14 @@
   <meta property="og:title" content="AFK - Games and Web Toys">
   <meta property="og:description" content="AFK에서 제작한 인터랙티브 웹 프로젝트 모음">
 
+  <!-- HTTPS 자동 보안 연결 및 주의 요함 방지 -->
+  <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+  <script>
+    if (location.protocol === 'http:' && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
+      location.replace('https://' + location.host + location.pathname + location.search + location.hash);
+    }
+  </script>
+
   <title>AFK - Games and Web Toys</title>
   <link rel="stylesheet" href="css/portal.css">
 </head>
