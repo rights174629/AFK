@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ko">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
@@ -11,7 +12,7 @@
   <meta property="og:type" content="website">
   <meta property="og:title" content="Keep the Fire Alive - 동기화된 하나의 장작불">
   <meta property="og:description" content="누군가 장작을 넣지 않으면, 이 불은 꺼집니다. 전 세계 접속자와 함께 불꽃을 지켜주세요.">
-  <meta property="og:url" content="http://localhost:3000/fire.html">
+  <meta property="og:url" content="https://localhost:3000/fire.html">
 
   <!-- HTTPS 자동 보안 연결 및 주의 요함 방지 -->
   <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
@@ -24,6 +25,7 @@
   <title>Keep the Fire Alive - 동기화된 하나의 장작불</title>
   <link rel="stylesheet" href="css/style.css">
 </head>
+
 <body>
 
   <!-- 상단 글로벌 정보 헤더 (W3C Semantic Header) -->
@@ -52,7 +54,8 @@
         <div class="user-indicator-dot" aria-hidden="true"></div>
         <span id="user-count" aria-live="polite">1명이 함께 불을 쬐는 중</span>
       </div>
-      <button type="button" id="chat-toggle-btn" class="icon-btn" aria-label="실시간 채팅창 접기/펼치기" aria-expanded="true">💬 채팅</button>
+      <button type="button" id="chat-toggle-btn" class="icon-btn" aria-label="실시간 채팅창 접기/펼치기" aria-expanded="true">💬
+        채팅</button>
       <button type="button" id="mute-btn" class="icon-btn" aria-label="장작불 소리 켜기 또는 음소거">🔊 소리</button>
     </div>
   </header>
@@ -68,7 +71,8 @@
 
     <!-- 하단 장작 넣기 및 화력 게이지 컨트롤 -->
     <section class="bottom-controls" aria-label="장작불 화력 및 장작 투입 컨트롤">
-      <div class="fire-health-bar-container" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="75" aria-label="현재 불꽃 화력">
+      <div class="fire-health-bar-container" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="75"
+        aria-label="현재 불꽃 화력">
         <div id="fire-health-fill" class="fire-health-fill"></div>
       </div>
       <div id="fire-health-text" class="fire-health-text" aria-live="polite">75.0% (STEADY)</div>
@@ -92,7 +96,8 @@
     <form class="chat-input-row" onsubmit="event.preventDefault();" role="search" aria-label="메시지 전송 폼">
       <span id="chat-my-nickname" class="chat-nickname-badge" title="내 닉네임 (클릭 시 변경)">나</span>
       <label for="chat-input" class="sr-only" style="display: none;">채팅 입력창</label>
-      <input type="text" id="chat-input" class="chat-input" placeholder="따뜻한 한마디 남기기 (최대 80자)..." maxlength="80" autocomplete="off">
+      <input type="text" id="chat-input" class="chat-input" placeholder="따뜻한 한마디 남기기 (최대 80자)..." maxlength="80"
+        autocomplete="off">
       <button type="button" id="chat-send-btn" class="chat-send-btn">전송</button>
     </form>
   </aside>
@@ -125,10 +130,12 @@
         다른 여행자들과 함께 부싯돌을 쳐서 새로운 불꽃을 피워주세요.
       </p>
       <button type="button" id="strike-flint-btn" class="flint-btn">⚡ 부싯돌 치기</button>
-      <div class="flint-progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="3" aria-valuenow="0" aria-label="부싯돌 진행률">
+      <div class="flint-progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="3" aria-valuenow="0"
+        aria-label="부싯돌 진행률">
         <div id="flint-progress-fill" class="flint-progress-fill"></div>
       </div>
-      <div id="flint-status-text" style="font-size: 10px; color: #64748b; margin-top: 6px; font-family: var(--font-pixel);">
+      <div id="flint-status-text"
+        style="font-size: 10px; color: #64748b; margin-top: 6px; font-family: var(--font-pixel);">
         부싯돌 불꽃 모으는 중 (0/3)
       </div>
     </div>
@@ -141,4 +148,5 @@
   <script src="js/chat.js"></script>
   <script src="js/main.js"></script>
 </body>
+
 </html>

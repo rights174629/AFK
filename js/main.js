@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
     serverTarget = undefined;
   } else {
     // file:// 로 직접 열었을 때 로컬 폴백
-    serverTarget = 'http://localhost:3000';
+    serverTarget = 'https://localhost:3000';
   }
 
   let socket;
@@ -50,8 +50,8 @@ document.addEventListener('DOMContentLoaded', () => {
         userCountEl.style.cursor = 'pointer';
         userCountEl.onclick = () => {
           const newUrl = prompt(
-            '실시간 백엔드 서버 주소를 입력하세요:\n(같은 Wi-Fi 휴대폰: http://192.168.55.180:3000\n클라우드 배포 시: https://서버주소)',
-            serverTarget || 'http://192.168.55.180:3000'
+            '실시간 백엔드 서버 주소를 입력하세요:\n(같은 Wi-Fi 휴대폰: https://192.168.55.180:3000\n클라우드 배포 시: https://서버주소)',
+            serverTarget || 'https://192.168.55.180:3000'
           );
           if (newUrl && newUrl.trim()) {
             localStorage.setItem('campfire_custom_server', newUrl.trim());
@@ -65,7 +65,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const listeners = {};
     socket = {
       on: (ev, fn) => { listeners[ev] = listeners[ev] || []; listeners[ev].push(fn); },
-      emit: (ev, data) => {}
+      emit: (ev, data) => { }
     };
   }
 
