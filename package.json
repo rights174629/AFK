@@ -1,0 +1,24 @@
+{
+  "name": "keep-the-fire-alive",
+  "version": "1.0.0",
+  "description": "전 세계 접속자가 단 하나의 실시간 가상 장작불을 함께 돌보는 힐링 웹 서비스",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "keywords": [
+    "fire",
+    "asmr",
+    "pixel-art",
+    "socket.io",
+    "canvas",
+    "healing"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.19.2",
+    "socket.io": "^4.7.5",
+    "socket.io-client": "^4.8.4"
+  }
+}

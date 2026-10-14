@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#05070b">
+  <meta name="description" content="전 세계 접속자가 단 하나의 실시간 가상 장작불을 함께 돌보며 대화를 나누는 협동 힐링 공간">
+  <meta name="keywords" content="장작불, ASMR, 픽셀아트, 멍때리기, 힐링, 실시간채팅, Keep the Fire Alive">
+
+  <!-- Open Graph / 소셜 메타 태그 -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Keep the Fire Alive - 동기화된 하나의 장작불">
+  <meta property="og:description" content="누군가 장작을 넣지 않으면, 이 불은 꺼집니다. 전 세계 접속자와 함께 불꽃을 지켜주세요.">
+  <meta property="og:url" content="http://localhost:3000/fire.html">
+
+  <title>Keep the Fire Alive - 동기화된 하나의 장작불</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- 상단 글로벌 정보 헤더 (W3C Semantic Header) -->
+  <header class="top-bar" role="banner">
+    <!-- 좌측: 홈 허브 이동 및 개인 체류 시간 -->
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <a href="/" class="icon-btn" aria-label="포털 메인 허브로 이동" style="text-decoration: none;">
+        <span>🏠</span>
+        <span>허브</span>
+      </a>
+      <div class="badge" role="status" aria-label="개인 체류 시간">
+        <span>⏳ 머문 시간:</span>
+        <span id="my-stay-time" style="color: #ffd166;" aria-live="polite">00:00:00</span>
+      </div>
+    </div>
+
+    <!-- 중앙: 전체 불꽃 생존 누적 시간 -->
+    <div class="center-lifetime" role="region" aria-label="불꽃 생존 시간">
+      <div class="lifetime-label">FIRE LIFETIME</div>
+      <div id="fire-lifetime" class="lifetime-counter" aria-live="polite">DAY 0 · 00:00:00</div>
+    </div>
+
+    <!-- 우측: 접속자 수 및 컨트롤 버튼 -->
+    <div class="top-right-group">
+      <div class="badge" role="status" aria-label="현재 실시간 접속자 수">
+        <div class="user-indicator-dot" aria-hidden="true"></div>
+        <span id="user-count" aria-live="polite">1명이 함께 불을 쬐는 중</span>
+      </div>
+      <button type="button" id="chat-toggle-btn" class="icon-btn" aria-label="실시간 채팅창 접기/펼치기" aria-expanded="true">💬 채팅</button>
+      <button type="button" id="mute-btn" class="icon-btn" aria-label="장작불 소리 켜기 또는 음소거">🔊 소리</button>
+    </div>
+  </header>
+
+  <!-- 메인 뷰포트 영역 (W3C Semantic Main) -->
+  <main id="main-content" role="main">
+    <!-- 픽셀 캔버스 뷰포트 -->
+    <div id="canvas-container" aria-label="실시간 픽셀 장작불과 앰비언트 광원 렌더링 화면">
+      <canvas id="fire-canvas" width="320" height="180" aria-label="픽셀 화로와 일렁이는 불꽃 캔버스"></canvas>
+    </div>
+
+    <!-- 하단 장작 넣기 및 화력 게이지 컨트롤 -->
+    <section class="bottom-controls" aria-label="장작불 화력 및 장작 투입 컨트롤">
+      <div class="fire-health-bar-container" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="75" aria-label="현재 불꽃 화력">
+        <div id="fire-health-fill" class="fire-health-fill"></div>
+      </div>
+      <div id="fire-health-text" class="fire-health-text" aria-live="polite">75.0% (STEADY)</div>
+
+      <button type="button" id="add-log-btn" class="log-action-btn" aria-label="장작 던져 넣기 (+8% 회복)">
+        <div id="cooldown-progress" class="cooldown-overlay-progress" aria-hidden="true"></div>
+        <span id="add-log-btn-text">🪵 장작 넣기 (+8%)</span>
+      </button>
+    </section>
+  </main>
+
+  <!-- 좌하단 실시간 캠프파이어 채팅 위젯 (W3C Semantic Aside) -->
+  <aside id="chat-widget" class="chat-widget" role="complementary" aria-label="실시간 장작불 대화방">
+    <div id="chat-header" class="chat-header" role="button" tabindex="0" aria-label="채팅창 최소화 토글">
+      <span>🔥 장작불 이야기</span>
+      <span style="font-size: 10px; color: var(--text-muted);" aria-hidden="true">접기/펼치기 ▾</span>
+    </div>
+    <div id="chat-messages" class="chat-messages" role="log" aria-live="polite" aria-relevant="additions text">
+      <!-- 실시간 채팅 메시지들이 textContent로 안전하게 추가됨 -->
+    </div>
+    <form class="chat-input-row" onsubmit="event.preventDefault();" role="search" aria-label="메시지 전송 폼">
+      <span id="chat-my-nickname" class="chat-nickname-badge" title="내 닉네임 (클릭 시 변경)">나</span>
+      <label for="chat-input" class="sr-only" style="display: none;">채팅 입력창</label>
+      <input type="text" id="chat-input" class="chat-input" placeholder="따뜻한 한마디 남기기 (최대 80자)..." maxlength="80" autocomplete="off">
+      <button type="button" id="chat-send-btn" class="chat-send-btn">전송</button>
+    </form>
+  </aside>
+
+  <!-- 화면 중앙 온기 알림 토스트 컨테이너 -->
+  <div id="toast-container" role="region" aria-label="알림 메시지" aria-live="assertive"></div>
+
+  <!-- 오디오 시작 유도 안내 오버레이 (브라우저 자동재생 정책 대응) -->
+  <div id="audio-prompt-overlay" role="dialog" aria-modal="true" aria-labelledby="audio-prompt-title">
+    <div class="audio-prompt-card">
+      <div class="audio-prompt-icon" aria-hidden="true">🪵 🔥</div>
+      <h2 id="audio-prompt-title" class="audio-prompt-title">KEEP THE FIRE ALIVE</h2>
+      <p class="audio-prompt-desc">
+        화면을 한 번 클릭하면<br>
+        타닥거리는 장작불 ASMR과 앰비언스 사운드가 켜집니다.
+      </p>
+    </div>
+  </div>
+
+  <!-- 불꽃 소멸 시 부활 의식 모달 -->
+  <div id="extinct-modal" role="dialog" aria-modal="true" aria-labelledby="extinct-title-text" style="display: none;">
+    <div class="extinct-card">
+      <div style="font-size: 36px; margin-bottom: 12px;" aria-hidden="true">❄️</div>
+      <h2 id="extinct-title-text" class="extinct-title">불꽃이 차갑게 식었습니다</h2>
+      <div class="extinct-stats">
+        마지막 생존 기록: <strong id="extinct-duration">DAY 0 · 00:00:00</strong><br>
+        누적 투입된 장작: <strong id="extinct-total-logs">0개</strong>
+      </div>
+      <p style="font-size: 12px; color: #94a3b8; margin-bottom: 18px;">
+        다른 여행자들과 함께 부싯돌을 쳐서 새로운 불꽃을 피워주세요.
+      </p>
+      <button type="button" id="strike-flint-btn" class="flint-btn">⚡ 부싯돌 치기</button>
+      <div class="flint-progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="3" aria-valuenow="0" aria-label="부싯돌 진행률">
+        <div id="flint-progress-fill" class="flint-progress-fill"></div>
+      </div>
+      <div id="flint-status-text" style="font-size: 10px; color: #64748b; margin-top: 6px; font-family: var(--font-pixel);">
+        부싯돌 불꽃 모으는 중 (0/3)
+      </div>
+    </div>
+  </div>
+
+  <!-- Socket.io CDN 라이브러리 및 스크립트 로드 -->
+  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/canvas.js"></script>
+  <script src="js/chat.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
