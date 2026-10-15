@@ -75,10 +75,10 @@ document.addEventListener('DOMContentLoaded', () => {
     };
   }
 
-  // 모바일 화면에서는 초기에 채팅창을 기본 접어두어 불꽃 화면 확보
-  if (window.innerWidth <= 768) {
+  // 데스크톱에서는 채팅창 기본 오픈, 모바일에서는 불꽃 화면 확보를 위해 기본 닫힘 유지
+  if (window.innerWidth > 768) {
     const chatWidget = document.getElementById('chat-widget');
-    if (chatWidget) chatWidget.classList.add('minimized');
+    if (chatWidget) chatWidget.classList.remove('closed');
   }
 
 
@@ -237,13 +237,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // 7. 채팅창 접기/펼치기 토글 버튼
-  if (chatToggleBtn) {
-    chatToggleBtn.addEventListener('click', () => {
-      const widget = document.getElementById('chat-widget');
-      if (widget) widget.classList.toggle('minimized');
-    });
-  }
+  // 7. 채팅창 토글은 CampfireChatManager 내부에서 전담 처리됨
 
   // 8. 부활 의식: 부싯돌 치기
   if (strikeFlintBtn) {

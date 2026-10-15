@@ -156,6 +156,25 @@ html, body {
   box-shadow: 0 0 10px var(--ember-glow);
 }
 
+.icon-btn.active {
+  border-color: var(--fire-orange);
+  background: rgba(45, 30, 20, 0.85);
+  color: var(--fire-yellow);
+  box-shadow: 0 0 12px rgba(255, 119, 34, 0.3);
+}
+
+.chat-unread-badge {
+  width: 6px;
+  height: 6px;
+  background-color: #ff4500;
+  border-radius: 50%;
+  box-shadow: 0 0 8px #ff4500, 0 0 12px #ff8c00;
+  margin-left: 2px;
+  animation: pulse-dot 1.2s infinite ease-in-out;
+  display: inline-block;
+  vertical-align: middle;
+}
+
 /* 하단 장작 던지기 컨트롤 영역 */
 .bottom-controls {
   position: absolute;
@@ -249,20 +268,26 @@ html, body {
   width: 340px;
   max-width: calc(100vw - 48px);
   background: var(--bg-card);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
   border: 1px solid var(--border-pixel);
   border-radius: 8px;
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.65);
-  z-index: 10;
+  z-index: 45;
   display: flex;
   flex-direction: column;
-  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease, visibility 0.28s;
+  transform: translateY(0) scale(1);
+  opacity: 1;
+  visibility: visible;
 }
 
-.chat-widget.minimized {
-  transform: translateY(calc(100% - 44px));
-  opacity: 0.85;
+/* 채팅 완전 닫힘 상태: 화면에서 완전히 사라짐 */
+.chat-widget.closed {
+  transform: translateY(24px) scale(0.96);
+  opacity: 0;
+  pointer-events: none;
+  visibility: hidden;
 }
 
 .chat-header {
@@ -274,7 +299,42 @@ html, body {
   font-family: var(--font-pixel);
   font-size: 11px;
   color: var(--fire-orange);
+}
+
+.chat-header-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  letter-spacing: 0.5px;
+}
+
+.chat-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.chat-header-close-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 150, 50, 0.25);
+  color: var(--text-muted);
+  border-radius: 4px;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
+  font-size: 11px;
+  font-family: var(--font-pixel);
+  transition: all 0.15s ease;
+}
+
+.chat-header-close-btn:hover {
+  background: rgba(230, 57, 70, 0.3);
+  border-color: rgba(230, 57, 70, 0.7);
+  color: #fff;
+  box-shadow: 0 0 8px rgba(230, 57, 70, 0.5);
 }
 
 .chat-messages {
@@ -643,22 +703,34 @@ html, body {
     box-shadow: 0 4px 18px rgba(0, 0, 0, 0.8), 0 0 15px rgba(255, 120, 30, 0.35);
   }
 
-  /* 4. 채팅 위젯: 장작 버튼 위쪽에 얌전하게 위치하여 조작 방해 제로 */
+  /* 4. 채팅 위젯: 장작 넣기 컨트롤 및 화력 게이지 위쪽에 여유 공간을 충분히 두고 배치 */
   .chat-widget {
-    left: 12px;
-    right: 12px;
-    bottom: calc(105px + env(safe-area-inset-bottom, 14px));
+    left: 14px;
+    right: 14px;
+    bottom: calc(156px + env(safe-area-inset-bottom, 14px));
     width: auto;
-    max-width: none;
+    max-width: 480px;
+    margin: 0 auto;
     z-index: 45;
+    max-height: min(230px, 34vh);
+    transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.24s ease, visibility 0.28s;
   }
 
-  .chat-widget.minimized {
-    transform: translateY(calc(100% - 36px));
+  .chat-widget.closed {
+    transform: translateY(28px) scale(0.96);
+    opacity: 0;
+    pointer-events: none;
+    visibility: hidden;
   }
 
   .chat-header {
     padding: 8px 12px;
+    font-size: 10px;
+  }
+
+  .chat-header-close-btn {
+    width: 20px;
+    height: 20px;
     font-size: 10px;
   }
 

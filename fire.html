@@ -23,7 +23,8 @@
   </script>
 
   <title>Keep the Fire Alive - 동기화된 하나의 장작불</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔥</text></svg>">
+  <link rel="icon"
+    href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔥</text></svg>">
   <link rel="stylesheet" href="css/style.css">
 </head>
 
@@ -55,8 +56,7 @@
         <div class="user-indicator-dot" aria-hidden="true"></div>
         <span id="user-count" aria-live="polite">1명이 함께 불을 쬐는 중</span>
       </div>
-      <button type="button" id="chat-toggle-btn" class="icon-btn" aria-label="실시간 채팅창 접기/펼치기" aria-expanded="true">💬
-        채팅</button>
+      <button type="button" id="chat-toggle-btn" class="icon-btn" aria-label="실시간 채팅창 열기/닫기" aria-expanded="false">💬 채팅<span id="chat-unread-badge" class="chat-unread-badge" style="display: none;"></span></button>
       <button type="button" id="mute-btn" class="icon-btn" aria-label="장작불 소리 켜기 또는 음소거">🔊 소리</button>
     </div>
   </header>
@@ -86,10 +86,12 @@
   </main>
 
   <!-- 좌하단 실시간 캠프파이어 채팅 위젯 (W3C Semantic Aside) -->
-  <aside id="chat-widget" class="chat-widget" role="complementary" aria-label="실시간 장작불 대화방">
-    <div id="chat-header" class="chat-header" role="button" tabindex="0" aria-label="채팅창 최소화 토글">
-      <span>🔥 장작불 이야기</span>
-      <span style="font-size: 10px; color: var(--text-muted);" aria-hidden="true">접기/펼치기 ▾</span>
+  <aside id="chat-widget" class="chat-widget closed" role="complementary" aria-label="실시간 장작불 대화방">
+    <div id="chat-header" class="chat-header">
+      <div class="chat-header-title">🔥 장작불 이야기</div>
+      <div class="chat-header-actions">
+        <button type="button" id="chat-close-btn" class="chat-header-close-btn" aria-label="채팅창 완전히 닫기" title="채팅창 닫기">✕</button>
+      </div>
     </div>
     <div id="chat-messages" class="chat-messages" role="log" aria-live="polite" aria-relevant="additions text">
       <!-- 실시간 채팅 메시지들이 textContent로 안전하게 추가됨 -->
