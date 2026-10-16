@@ -1,0 +1,19 @@
+{
+  "version": "2.0.0",
+  "mvps": [
+    {
+      "id": "garden_mvp",
+      "title": "🌳 세상에서 가장 느린 정원 v2.0",
+      "url": "mvp/garden_mvp.html",
+      "filename": "garden_mvp.html",
+      "description": "30일 거목 성장, 토양 수분 균열, KST 실시간 일주운동 및 사운드 테스트베드"
+    },
+    {
+      "id": "fire_mvp",
+      "title": "🔥 불꽃 테스트베드 v2.0",
+      "url": "mvp/fire_mvp.html",
+      "filename": "fire_mvp.html",
+      "description": "실시간 픽셀 장작불 화력 감쇠, 장작 투입, 앰비언트 광원 및 쿨다운 테스트베드"
+    }
+  ]
+}

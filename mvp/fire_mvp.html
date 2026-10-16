@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#05070b">
+  <title>🔥 불꽃 테스트베드 v2.0 - UI MVP</title>
+  <link rel="icon"
+    href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔥</text></svg>">
+  <link rel="stylesheet" href="../css/style.css">
+
+  <!-- 1줄 삽입 샌드박스 브릿지 -->
+  <script src="../js/dev-bridge.js"></script>
+</head>
+
+<body>
+
+  <!-- 상단 글로벌 정보 헤더 (W3C Semantic Header) -->
+  <header class="top-bar" role="banner">
+    <!-- 좌측: 홈 허브 이동 및 개인 체류 시간 -->
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <a href="/" class="icon-btn" aria-label="포털 메인 허브로 이동" style="text-decoration: none;">
+        <span>🏠</span>
+        <span>허브</span>
+      </a>
+      <div class="badge" role="status" aria-label="개인 체류 시간">
+        <span>⏳ 머문 시간:</span>
+        <span id="my-stay-time" style="color: #ffd166;" aria-live="polite">00:00:00</span>
+      </div>
+    </div>
+
+    <!-- 중앙: 전체 불꽃 생존 누적 시간 -->
+    <div class="center-lifetime" role="region" aria-label="불꽃 생존 시간">
+      <div class="lifetime-label">FIRE LIFETIME</div>
+      <div id="fire-lifetime" class="lifetime-counter" aria-live="polite">DAY 0 · 12:00:00</div>
+    </div>
+
+    <!-- 우측: 접속자 수 및 컨트롤 버튼 -->
+    <div class="top-right-group">
+      <div class="badge" role="status" aria-label="현재 실시간 접속자 수">
+        <div class="user-indicator-dot" aria-hidden="true"></div>
+        <span id="user-count" aria-live="polite">12명이 함께 불을 쬐는 중</span>
+      </div>
+      <button type="button" id="chat-toggle-btn" class="icon-btn" aria-label="실시간 채팅창 열기/닫기" aria-expanded="false">
+        💬 채팅<span id="chat-unread-badge" class="chat-unread-badge" style="display: none;"></span>
+      </button>
+      <button type="button" id="mute-btn" class="icon-btn" aria-label="장작불 소리 켜기 또는 음소거">🔊 소리</button>
+    </div>
+  </header>
+
+  <!-- 메인 뷰포트 영역 (W3C Semantic Main) -->
+  <main id="main-content" role="main">
+    <!-- 픽셀 캔버스 뷰포트 -->
+    <div id="canvas-container" aria-label="실시간 픽셀 장작불과 앰비언트 광원 렌더링 화면">
+      <canvas id="fire-canvas" width="320" height="180" aria-label="픽셀 화로와 일렁이는 불꽃 캔버스">
+        이 브라우저는 HTML5 캔버스를 지원하지 않습니다.
+      </canvas>
+    </div>
+
+    <!-- 하단 장작 넣기 및 화력 게이지 컨트롤 -->
+    <section class="bottom-controls" aria-label="장작불 화력 및 장작 투입 컨트롤">
+      <div class="fire-health-bar-container" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="75"
+        aria-label="현재 불꽃 화력">
+        <div id="fire-health-fill" class="fire-health-fill" style="width: 75%;"></div>
+      </div>
+      <div id="fire-health-text" class="fire-health-text" aria-live="polite">75.0% (STEADY)</div>
+
+      <button type="button" id="add-log-btn" class="log-action-btn" aria-label="장작 던져 넣기 (+8% 회복)">
+        <div id="cooldown-progress" class="cooldown-overlay-progress" aria-hidden="true"></div>
+        <span id="add-log-btn-text">🪵 장작 넣기 (+8%)</span>
+      </button>
+    </section>
+  </main>
+
+  <!-- 좌하단 실시간 캠프파이어 채팅 위젯 (W3C Semantic Aside) -->
+  <aside id="chat-widget" class="chat-widget closed" role="complementary" aria-label="실시간 장작불 대화방">
+    <div id="chat-header" class="chat-header">
+      <div class="chat-header-title">🔥 장작불 이야기</div>
+      <div class="chat-header-actions">
+        <button type="button" id="chat-close-btn" class="chat-header-close-btn" aria-label="채팅창 완전히 닫기" title="채팅창 닫기">✕</button>
+      </div>
+    </div>
+    <div id="chat-messages" class="chat-messages" role="log" aria-live="polite" aria-relevant="additions text">
+      <div class="chat-message-item system-message">
+        <span class="chat-sender">시스템</span>
+        <span class="chat-bubble">🔥 장작불 샌드박스 테스트 세션이 시작되었습니다.</span>
+      </div>
+    </div>
+    <form class="chat-input-row" onsubmit="event.preventDefault();" role="search" aria-label="메시지 전송 폼">
+      <span id="chat-my-nickname" class="chat-nickname-badge" title="내 닉네임 (클릭 시 변경)">나</span>
+      <input type="text" id="chat-input" class="chat-input" placeholder="따뜻한 한마디 남기기 (최대 80자)..." maxlength="80"
+        autocomplete="off">
+      <button type="button" id="chat-send-btn" class="chat-send-btn">전송</button>
+    </form>
+  </aside>
+
+  <!-- 화면 중앙 온기 알림 토스트 컨테이너 -->
+  <div id="toast-container" role="region" aria-label="알림 메시지" aria-live="assertive"></div>
+
+  <!-- 오디오 시작 유도 안내 오버레이 -->
+  <div id="audio-prompt-overlay" role="dialog" aria-modal="true" aria-labelledby="audio-prompt-title">
+    <div class="audio-prompt-card">
+      <div class="audio-prompt-icon" aria-hidden="true">🪵 🔥</div>
+      <h2 id="audio-prompt-title" class="audio-prompt-title">KEEP THE FIRE ALIVE</h2>
+      <p class="audio-prompt-desc">
+        화면을 한 번 클릭하면<br>
+        타닥거리는 장작불 ASMR과 앰비언스 사운드가 켜집니다.
+      </p>
+    </div>
+  </div>
+
+  <!-- 불꽃 소멸(Extinction) 부싯돌 협동 부활 모달 -->
+  <div id="resurrection-modal" role="dialog" aria-modal="true" aria-labelledby="resurrection-title-text" style="display: none;">
+    <div class="resurrection-card">
+      <div style="font-size: 36px; margin-bottom: 12px;" aria-hidden="true">💨</div>
+      <h2 id="resurrection-title-text" class="resurrection-title">불꽃이 소멸되었습니다</h2>
+      <div class="resurrection-stats">
+        지금까지 함께 지켜온 시간: <strong id="extinct-duration">DAY 0 · 12:00:00</strong><br>
+        타오른 장작 총개수: <strong id="extinct-total-logs">42개</strong>
+      </div>
+      <p style="font-size: 12px; color: #94a3b8; margin-bottom: 18px;">
+        부싯돌을 쳐서 다시 새로운 불씨를 피워주세요. (혼자서도 즉시 점화 가능)
+      </p>
+      <button type="button" id="strike-flint-btn" class="flint-btn">✨ 부싯돌 치기</button>
+      <div class="flint-progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="1" aria-valuenow="0"
+        aria-label="부싯돌 불꽃 점화 진행률">
+        <div id="flint-progress-fill" class="flint-progress-fill"></div>
+      </div>
+      <div id="flint-status-text"
+        style="font-size: 10px; color: #94a3b8; margin-top: 6px; font-family: var(--font-pixel);">
+        혼자서 부싯돌을 한 번만 쳐도 새 불꽃이 피어납니다!
+      </div>
+    </div>
+  </div>
+
+  <!-- 스크립트 로드 -->
+  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+  <script src="../js/audio.js"></script>
+  <script src="../js/canvas.js"></script>
+  <script src="../js/chat.js"></script>
+  <script src="../js/main.js"></script>
+
+  <!-- 2. 선언형 개발자 스키마 및 인터랙션 훅 정의 -->
+  <script>
+    window.AFK_DEV_CONFIG = {
+      id: 'fire_mvp',
+      title: '🔥 불꽃 테스트베드 v2.0',
+      version: '2.0.0',
+      controls: [
+        { key: 'fireLife', label: '불꽃 화력 (%)', type: 'range', min: 0, max: 100, step: 1, value: 75 },
+        { key: 'userCount', label: '가상 접속자 수', type: 'range', min: 1, max: 100, step: 1, value: 12 },
+        { key: 'status', label: '불꽃 상태', type: 'select', options: ['BLAZING', 'STEADY', 'DYING', 'EXTINGUISHED'], value: 'STEADY' }
+      ],
+      actions: [
+        { id: 'add_log_instant', label: '🪵 장작 즉시 투입 (+8%)' },
+        { id: 'test_extinct', label: '💨 소멸(0%) 모달 호출', danger: true },
+        { id: 'skip_fire_cooldown', label: '⚡ 3분 쿨다운 즉시 해제' },
+        { id: 'sim_wood_crackle', label: '🔊 장작 타닥 소리 테스트' }
+      ],
+      qaChecks: [
+        { id: 'fire_health_visible', desc: '화력 게이지 및 텍스트 표시', check: () => !!document.getElementById('fire-health-fill') },
+        { id: 'add_log_btn_ok', desc: '장작 투입 버튼 정상 존재', check: () => !!document.getElementById('add-log-btn') },
+        { id: 'chat_toggle_ok', desc: '채팅 위젯 존재', check: () => !!document.getElementById('chat-widget') }
+      ]
+    };
+
+    window.AFK_DEV_HOOKS = {
+      onControlChange: function (key, value) {
+        if (key === 'fireLife') {
+          const life = parseFloat(value);
+          const fill = document.getElementById('fire-health-fill');
+          if (fill) fill.style.width = `${life}%`;
+          const text = document.getElementById('fire-health-text');
+          const status = life <= 0 ? 'EXTINGUISHED' : (life >= 70 ? 'BLAZING' : (life >= 30 ? 'STEADY' : 'DYING'));
+          if (text) text.textContent = `${life.toFixed(1)}% (${status})`;
+          if (window.fireCanvas) {
+            window.fireCanvas.targetLife = life;
+            window.fireCanvas.status = status;
+          }
+        } else if (key === 'userCount') {
+          const count = parseInt(value, 10);
+          const userCountEl = document.getElementById('user-count');
+          if (userCountEl) userCountEl.textContent = `${count}명이 함께 불을 쬐는 중`;
+        } else if (key === 'status') {
+          if (window.fireCanvas) {
+            window.fireCanvas.status = value;
+          }
+        }
+      },
+
+      onAction: function (actionId) {
+        if (actionId === 'add_log_instant') {
+          const btn = document.getElementById('add-log-btn');
+          if (btn) btn.click();
+          if (window.showToast) window.showToast('🪵 장작이 즉시 투입되었습니다!');
+        } else if (actionId === 'test_extinct') {
+          const modal = document.getElementById('resurrection-modal');
+          if (modal) modal.style.display = 'flex';
+          if (window.showToast) window.showToast('💨 불꽃 소멸 모달을 호출했습니다.');
+        } else if (actionId === 'skip_fire_cooldown') {
+          localStorage.removeItem('campfire_log_cooldown_expiry');
+          const addLogBtn = document.getElementById('add-log-btn');
+          const prog = document.getElementById('cooldown-progress');
+          const txt = document.getElementById('add-log-btn-text');
+          if (addLogBtn) addLogBtn.disabled = false;
+          if (prog) prog.style.width = '0%';
+          if (txt) txt.textContent = '🪵 장작 넣기 (+8%)';
+          if (window.showToast) window.showToast('⚡ 3분 쿨다운이 즉시 해제되었습니다!');
+        } else if (actionId === 'sim_wood_crackle') {
+          if (window.campfireAudio && window.campfireAudio.playWoodPlacement) {
+            window.campfireAudio.unlock();
+            window.campfireAudio.playWoodPlacement();
+            if (window.showToast) window.showToast('🔊 장작 타닥 효과음 재생');
+          }
+        }
+      }
+    };
+  </script>
+</body>
+
+</html>

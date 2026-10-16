@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#080c14">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="description" content="AFK 개발자 전용 샌드박스 포털 - UI MVP 자동 관리 및 실시간 제어 스튜디오">
+
+  <title>🛠️ AFK DevPortal v2.0 - 샌드박스 통합 테스트 허브</title>
+
+  <!-- 웹폰트 로드: Inter & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+
+  <link rel="icon"
+    href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🛠️</text></svg>">
+  <link rel="stylesheet" href="css/developer.css">
+</head>
+
+<body>
+
+  <!-- ==========================================================================
+       1. 상단 글로벌 마스터 툴바
+       ========================================================================== -->
+  <header id="master-header" class="master-header" role="banner">
+    <!-- 좌측: 브랜드 로고 및 프로젝트 스위처 -->
+    <div class="brand-group">
+      <a href="/" class="brand-title" title="AFK 메인 허브로 이동">
+        <span class="brand-icon">🛠️</span>
+        <span>AFK DevPortal</span>
+        <span class="brand-badge">v2.0</span>
+      </a>
+
+      <!-- 프로젝트 자동 인식 스위처 드롭다운 -->
+      <div class="project-switcher" role="region" aria-label="MVP 선택기">
+        <select id="mvp-select" class="select-mvp" aria-label="테스트할 MVP 선택">
+          <option value="garden_mvp">🌳 세상에서 가장 느린 정원 v2.0</option>
+          <option value="fire_mvp">🔥 불꽃 테스트베드 v2.0</option>
+        </select>
+        <button type="button" id="refresh-mvps-btn" class="icon-btn-ghost" title="MVP 목록 새로고침 (새 파일 자동 스캔)">🔄</button>
+        <button type="button" id="open-local-btn" class="icon-btn-ghost" title="로컬 HTML 파일 직접 열기">📂</button>
+        <input type="file" id="local-file-input" style="display: none;" accept=".html,.htm">
+      </div>
+
+      <!-- 실서버 차단 샌드박스 격리 상태 배지 -->
+      <div class="sandbox-badge" title="실서버 네트워크 연결이 완벽히 차단된 안전한 가상 샌드박스입니다.">
+        <div class="pulse-dot"></div>
+        <span>SANDBOX ISOLATED</span>
+      </div>
+    </div>
+
+    <!-- 중앙: 뷰포트 해상도 & 타임워프 배속기 -->
+    <div class="center-toolbar">
+      <!-- 뷰포트 프리셋 세그먼트 -->
+      <div class="segmented-control" role="group" aria-label="디바이스 뷰포트 선택">
+        <button type="button" class="seg-btn active" data-viewport="desktop" title="데스크톱 100% 가변 해상도">🖥️ 데스크톱</button>
+        <button type="button" class="seg-btn" data-viewport="iphone" title="iPhone 14 Pro (390×844)">📱 iPhone</button>
+        <button type="button" class="seg-btn" data-viewport="tablet" title="iPad Mini (768×1024)">💻 Tablet</button>
+      </div>
+
+      <!-- 타임워프 가속기 세그먼트 -->
+      <div class="segmented-control" role="group" aria-label="시간 배속기">
+        <button type="button" class="seg-btn active emerald" data-warp="1" title="정상 속도 (1x)">1x</button>
+        <button type="button" class="seg-btn" data-warp="10" title="10배속 (10x)">10x</button>
+        <button type="button" class="seg-btn" data-warp="60" title="60배속 (1초=1분)">60x</button>
+        <button type="button" class="seg-btn" data-warp="3600" title="3600배속 (1초=1시간)">3600x</button>
+      </div>
+    </div>
+
+    <!-- 우측: 샌드박스 프로세스 관리 & 젠모드 -->
+    <div class="master-actions">
+      <button type="button" id="hard-reload-btn" class="action-pill-btn" title="아이프레임 컨테이너 완전 파괴 및 재생성 (메모리/타이머/사운드 GC)">
+        <span>🧹</span>
+        <span>샌드박스 재부팅 (R)</span>
+      </button>
+      <button type="button" id="zen-mode-btn" class="action-pill-btn" title="개발자 패널을 모두 숨기고 정원 화면만 감상합니다 (단축키 H)">
+        <span>👁️</span>
+        <span>Zen Mode (H)</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ==========================================================================
+       2. 메인 작업 레이아웃 (뷰포트 스테이지 + 인스펙터 사이드바)
+       ========================================================================== -->
+  <main class="portal-workspace" role="main">
+    <!-- 좌측/중앙: 샌드박스 뷰포트 스테이지 -->
+    <section id="sandbox-stage" class="sandbox-stage" aria-label="MVP 렌더링 뷰포트">
+      <div id="viewport-info-text" class="viewport-info-bar">🖥️ Desktop (100% Fluid)</div>
+
+      <!-- 디바이스 프레임 래퍼 -->
+      <div id="viewport-device-frame" class="viewport-device-frame mode-desktop">
+        <div class="device-notch"></div>
+        <iframe id="sandbox-iframe" class="sandbox-iframe" src="about:blank" title="AFK MVP Sandbox Viewport" allow="autoplay"></iframe>
+      </div>
+
+      <!-- 드래그 앤 드롭 오버레이 존 -->
+      <div id="drag-overlay" class="drag-overlay">
+        <div class="drag-icon">📂</div>
+        <h2 style="font-size: 18px; font-weight: 700; color: #fff;">여기에 HTML 파일을 놓으세요</h2>
+        <p style="font-size: 12px; color: #94a3b8;">서버 재부팅 없이 로컬 파일을 즉시 샌드박스로 로드하여 테스트합니다.</p>
+      </div>
+    </section>
+
+    <!-- 우측: 3-Tab 통합 인스펙터 패널 -->
+    <aside id="inspector-sidebar" class="inspector-sidebar" role="complementary" aria-label="개발자 컨트롤 및 디버깅 인스펙터">
+      <!-- 탭 바 -->
+      <nav class="inspector-tabs" role="tablist">
+        <button type="button" class="tab-btn active" data-tab="controls" role="tab" aria-selected="true">
+          <span>🛠️ 컨트롤러</span>
+        </button>
+        <button type="button" class="tab-btn" data-tab="qa" role="tab" aria-selected="false">
+          <span>✅ 자동 QA & 스냅샷</span>
+          <span id="qa-tab-badge" class="tab-badge">0/0</span>
+        </button>
+        <button type="button" class="tab-btn" data-tab="logs" role="tab" aria-selected="false">
+          <span>📡 가상 소켓 로그</span>
+          <span id="log-tab-badge" class="tab-badge">0/40</span>
+        </button>
+      </nav>
+
+      <!-- 탭 패널 컨텐츠 영역 -->
+      <div class="tab-content-area">
+
+        <!-- 탭 1: 🛠️ 컨트롤러 패널 -->
+        <div id="tab-panel-controls" class="tab-panel active" role="tabpanel">
+          <!-- 선언형 스키마 자동 생성 슬라이더 카드 -->
+          <section class="dev-card">
+            <div class="dev-card-title">
+              <span>실시간 파라미터 조작</span>
+              <span style="font-size: 10px; color: #64748b; font-family: var(--font-mono);">SCHEMA CONTROLS</span>
+            </div>
+            <div id="dynamic-controls-container" style="display: flex; flex-direction: column; gap: 12px;">
+              <!-- JS에서 AFK_DEV_CONFIG.controls 기반으로 동적 렌더링됨 -->
+            </div>
+          </section>
+
+          <!-- 원클릭 테스트 시나리오 액션 카드 -->
+          <section class="dev-card">
+            <div class="dev-card-title">
+              <span>원클릭 시나리오 검증</span>
+              <span style="font-size: 10px; color: #64748b; font-family: var(--font-mono);">SCENARIO ACTIONS</span>
+            </div>
+            <div id="dynamic-actions-container" class="actions-grid">
+              <!-- JS에서 AFK_DEV_CONFIG.actions 기반으로 동적 렌더링됨 -->
+            </div>
+          </section>
+        </div>
+
+        <!-- 탭 2: ✅ 자동 QA & 스냅샷 패널 -->
+        <div id="tab-panel-qa" class="tab-panel" role="tabpanel">
+          <!-- QA 자동 진단 요약 카드 -->
+          <section class="dev-card">
+            <div class="dev-card-title">
+              <span>요구사항 자동 스모크 진단</span>
+              <button type="button" id="rerun-qa-btn" class="action-pill-btn" style="padding: 2px 8px; font-size: 10px;">🧪 즉시 재진단</button>
+            </div>
+            <div class="qa-summary-box">
+              <span style="font-size: 12px; font-weight: 600;">종합 검증 판정:</span>
+              <span id="qa-summary-pill" class="qa-status-pill pass">진단 대기 중</span>
+            </div>
+            <div id="qa-checklist-container" class="qa-list">
+              <!-- JS에서 QA 체크리스트 항목 동적 렌더링 -->
+            </div>
+          </section>
+
+          <!-- 상태 스냅샷 저장 및 딥링크 공유 카드 -->
+          <section class="dev-card">
+            <div class="dev-card-title">
+              <span>상태 스냅샷 및 URL 공유</span>
+              <span style="font-size: 10px; color: #64748b; font-family: var(--font-mono);">SNAPSHOTS</span>
+            </div>
+            <div class="snapshot-input-row">
+              <input type="text" id="snapshot-name-input" class="snapshot-input" placeholder="프리셋 이름 (예: 가을 밤 22시)..." maxlength="30">
+              <button type="button" id="save-snapshot-btn" class="action-pill-btn">📸 저장</button>
+            </div>
+            <button type="button" id="copy-url-btn" class="action-pill-btn" style="width: 100%; justify-content: center;">
+              <span>🔗</span>
+              <span>현재 상태 재현 URL 복사 (쿼리스트링 딥링크)</span>
+            </button>
+
+            <div style="font-size: 11px; font-weight: 600; color: #94a3b8; margin-top: 4px;">저장된 로컬 프리셋</div>
+            <div id="presets-list-container" class="preset-list">
+              <!-- localStorage 기반 프리셋 카드 동적 렌더링 -->
+            </div>
+          </section>
+        </div>
+
+        <!-- 탭 3: 📡 가상 소켓 패킷 로그 패널 -->
+        <div id="tab-panel-logs" class="tab-panel" role="tabpanel">
+          <section class="dev-card" style="flex: 1; display: flex; flex-direction: column;">
+            <div class="log-toolbar">
+              <div class="segmented-control">
+                <button type="button" class="seg-btn active" data-log-filter="all">전체</button>
+                <button type="button" class="seg-btn" data-log-filter="in">📥 IN</button>
+                <button type="button" class="seg-btn" data-log-filter="out">📤 OUT</button>
+              </div>
+              <button type="button" id="clear-logs-btn" class="action-pill-btn" style="padding: 2px 8px; font-size: 10px;">🧹 비우기</button>
+            </div>
+
+            <!-- 패킷 링 버퍼 스트림 (최신 40개 고정) -->
+            <div id="socket-log-stream" class="log-stream-container">
+              <!-- 실시간 패킷 항목 동적 추가 -->
+            </div>
+          </section>
+
+          <!-- 가상 패킷 주입기 (인젝터) -->
+          <section class="dev-card">
+            <div class="dev-card-title">
+              <span>MockSocket 패킷 강제 주입</span>
+              <span style="font-size: 10px; color: #64748b; font-family: var(--font-mono);">INJECTOR</span>
+            </div>
+            <div class="snapshot-input-row">
+              <input type="text" id="inject-event-input" class="snapshot-input" placeholder="이벤트명 (예: plant_watered)" value="plant_watered">
+              <button type="button" id="inject-packet-btn" class="action-pill-btn">📡 주입</button>
+            </div>
+            <textarea id="inject-payload-input" class="injector-textarea" placeholder='JSON Payload (예: {"newMoisture": 90, "status": "LUSH"})'>{"newMoisture": 90, "status": "LUSH", "totalWaterings": 20}</textarea>
+          </section>
+        </div>
+
+      </div>
+    </aside>
+  </main>
+
+  <!-- ==========================================================================
+       3. 젠 모드 복귀 플로팅 버튼
+       ========================================================================== -->
+  <button type="button" id="zen-restore-btn" class="zen-restore-btn">
+    <span>👁️</span>
+    <span>Dev UI 복귀 (H)</span>
+  </button>
+
+  <!-- ==========================================================================
+       4. 토스트 알림 컨테이너
+       ========================================================================== -->
+  <div id="dev-toast-container" class="toast-container" aria-live="polite"></div>
+
+  <!-- ==========================================================================
+       5. 개발자 보안 PIN 게이트 모달 (기본 PIN: 2026)
+       ========================================================================== -->
+  <div id="auth-modal-backdrop" class="auth-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="auth-modal-title">
+    <div id="auth-modal-card" class="auth-modal-card">
+      <div class="auth-icon-wrap" aria-hidden="true">🛡️</div>
+      <h2 id="auth-modal-title" class="auth-title">AFK Developer Gate</h2>
+      <p class="auth-desc">
+        미공개 차기작 및 비공개 테스트를 위한 개발자 전용 샌드박스입니다.<br>
+        개발자 PIN 번호를 입력하세요.
+      </p>
+
+      <form id="auth-form" class="auth-form">
+        <label for="auth-pin-input" class="sr-only" style="display: none;">개발자 PIN 4자리</label>
+        <input type="password" id="auth-pin-input" class="auth-input" maxlength="4" placeholder="••••" autocomplete="off" required>
+        <button type="submit" class="auth-btn-submit">인증 및 샌드박스 접속</button>
+      </form>
+
+      <a href="/" class="auth-back-link">🏠 일반 메인 허브로 돌아가기</a>
+    </div>
+  </div>
+
+  <!-- 마스터 컨트롤러 스크립트 로드 -->
+  <script src="js/developer.js"></script>
+</body>
+
+</html>

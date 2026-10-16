@@ -366,6 +366,26 @@ app.get(['/garden', '/garden.html'], (req, res) => {
   res.sendFile(path.join(__dirname, 'garden.html'));
 });
 
+// 🛠️ 개발자 전용 샌드박스 포털 (검색엔진 색인 방지 헤더 포함)
+app.get(['/developermode', '/developermode.html', '/dev'], (req, res) => {
+  res.setHeader('X-Robots-Tag', 'noindex, nofollow');
+  res.sendFile(path.join(__dirname, 'developermode.html'));
+});
+
+// /mvp 폴더 내의 HTML 파일 목록 자동 스캔 API (관리 자동화)
+app.get('/api/dev/mvps', (req, res) => {
+  const mvpDir = path.join(__dirname, 'mvp');
+  if (!fs.existsSync(mvpDir)) return res.json({ mvps: [] });
+  const files = fs.readdirSync(mvpDir).filter(f => f.endsWith('.html'));
+  res.json({
+    mvps: files.map(filename => ({
+      id: filename.replace('.html', ''),
+      url: `/mvp/${filename}`,
+      filename
+    }))
+  });
+});
+
 
 // --- Socket.io 실시간 이벤트 핸들링 ---
 io.on('connection', (socket) => {
@@ -659,5 +679,6 @@ server.listen(PORT, '0.0.0.0', () => {
   console.log(`🌐 포트: ${PORT} (0.0.0.0 바인딩 완료)`);
   console.log(`🌱 정원 경로: /garden 또는 /garden.html`);
   console.log(`🔥 장작불 경로: /fire 또는 /fire.html`);
+  console.log(`🛠️ 개발자 포털: /developermode 또는 /developermode.html`);
   console.log(`===============================================`);
 });

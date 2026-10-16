@@ -112,6 +112,14 @@ class GardenCanvasEngine {
     };
 
     this.treeImage.onerror = () => {
+      if (this.treeImage.src.endsWith('/tree.png')) {
+        this.treeImage.src = '../pngtree-a-tree-in-pixel-art-style-png-image_15060073.png';
+        return;
+      }
+      if (this.treeImage.src.includes('pngtree-a-tree-in-pixel-art-style-png-image_15060073.png') && !this.treeImage.src.includes('../')) {
+        this.treeImage.src = 'pngtree-a-tree-in-pixel-art-style-png-image_15060073.png';
+        return;
+      }
       console.warn('[CANVAS] 나무 이미지 로드 실패, 절차적 픽셀 거목 렌더러로 폴백합니다.');
       this.isTreeImageLoaded = false;
       this.needsCacheRedraw = true;

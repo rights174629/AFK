@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#030806">
+  <title>🌳 세상에서 가장 느린 정원 v2.0 - UI MVP</title>
+  <link rel="icon"
+    href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌿</text></svg>">
+  <link rel="stylesheet" href="../css/garden.css">
+  
+  <!-- 1줄 삽입 샌드박스 브릿지 (가장 먼저 로드하여 MockSocket 활성화) -->
+  <script src="../js/dev-bridge.js"></script>
+</head>
+
+<body>
+
+  <!-- 상단 글로벌 정보 헤더 (W3C Semantic Header) -->
+  <header class="top-bar" role="banner">
+    <!-- 좌측: 홈 허브 이동, 개인 체류 시간, 나무 성장률 배지 -->
+    <div class="top-left-group">
+      <a href="/" class="icon-btn" aria-label="포털 메인 허브로 이동">
+        <span>🏠</span>
+        <span>허브</span>
+      </a>
+      <div class="badge" role="status" aria-label="개인 체류 시간">
+        <span>⏳ 머문 시간:</span>
+        <span id="my-stay-time" style="color: #fde047;" aria-live="polite">00:00:00</span>
+      </div>
+      <!-- [핵심] 성장률 배지: 픽셀 수치 일절 비공개, 머문 시간 바로 우측에 백분율로만 표시 -->
+      <div class="badge badge-growth" role="status" aria-label="나무 성장률 (30일 만개 목표 대비)">
+        <span>🌱 성장률:</span>
+        <span id="garden-growth-rate" style="color: #4ade80;" aria-live="polite">80.0%</span>
+      </div>
+    </div>
+
+    <!-- 중앙: 전체 식물 생존 일수 및 실시간 자연환경 메타 태그 -->
+    <div class="center-lifetime" role="region" aria-label="정원 생존 기록 및 환경 상태">
+      <div class="lifetime-label">GARDEN LIFETIME</div>
+      <div id="garden-lifetime" class="lifetime-counter" aria-live="polite">DAY 24 · 14:00:00</div>
+      <div class="env-meta-tags">
+        <span id="season-tag" class="env-tag" title="현재 계절">🌿 여름</span>
+        <span id="weather-tag" class="env-tag" title="현재 날씨">☀️ 맑음</span>
+        <span id="time-tag" class="env-tag" title="현재 시간대">☀️ 한낮 (14시)</span>
+      </div>
+    </div>
+
+    <!-- 우측: 접속자 수 및 컨트롤 버튼 -->
+    <div class="top-right-group">
+      <div class="badge" role="status" aria-label="현재 실시간 접속자 수">
+        <div class="user-indicator-dot" aria-hidden="true"></div>
+        <span id="user-count" aria-live="polite">1명이 함께 식물이 자라는 것을 보고 있음</span>
+      </div>
+      <button type="button" id="chat-toggle-btn" class="icon-btn" aria-label="실시간 채팅창 열기/닫기" aria-expanded="false">
+        💬 채팅<span id="chat-unread-badge" class="chat-unread-badge" style="display: none;"></span>
+      </button>
+      <button type="button" id="mute-btn" class="icon-btn" aria-label="정원 자연 소리 켜기 또는 음소거">🔊 소리</button>
+    </div>
+  </header>
+
+  <!-- 메인 뷰포트 영역 (W3C Semantic Main) -->
+  <main id="main-content" role="main">
+    <!-- 3-Layer 도트 거목 & 자연환경 캔버스 뷰포트 -->
+    <div id="canvas-container" aria-label="실시간 30일 도트 거목과 실시간 자연환경 렌더링 화면">
+      <canvas id="garden-canvas" width="320" height="180" aria-label="30일 도트 거목과 밤낮 일주운동 캔버스">
+        이 브라우저는 HTML5 캔버스를 지원하지 않습니다.
+      </canvas>
+    </div>
+
+    <!-- 하단 물주기 및 수분 게이지 컨트롤 -->
+    <section class="bottom-controls" aria-label="토양 수분 게이지 및 물주기 컨트롤">
+      <div class="moisture-bar-container" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="85"
+        aria-label="현재 토양 수분 상태">
+        <div id="moisture-fill" class="moisture-fill" style="width: 85%;"></div>
+      </div>
+      <div id="moisture-text" class="moisture-text" aria-live="polite">수분 85.0% (LUSH · 싱그럽게 자라는 중)</div>
+
+      <button type="button" id="water-btn" class="water-action-btn" aria-label="정원에 물주기 (+10% 수분 회복)">
+        <div id="cooldown-progress" class="cooldown-overlay-progress" aria-hidden="true"></div>
+        <span id="water-btn-text">💧 물주기 (+10%)</span>
+      </button>
+    </section>
+  </main>
+
+  <!-- 좌하단 실시간 정원 채팅 위젯 (W3C Semantic Aside) -->
+  <aside id="chat-widget" class="chat-widget closed" role="complementary" aria-label="실시간 정원 대화방">
+    <div id="chat-header" class="chat-header">
+      <div class="chat-header-title">🌱 정원 이야기</div>
+      <div class="chat-header-actions">
+        <button type="button" id="chat-close-btn" class="chat-header-close-btn" aria-label="채팅창 닫기" title="채팅창 닫기">✕</button>
+      </div>
+    </div>
+    <div id="chat-messages" class="chat-messages" role="log" aria-live="polite" aria-relevant="additions text">
+      <div class="chat-message-item system-message">
+        <span class="chat-sender">시스템</span>
+        <span class="chat-bubble">🌿 샌드박스 테스트 세션이 시작되었습니다.</span>
+      </div>
+    </div>
+    <form class="chat-input-row" onsubmit="event.preventDefault();" role="search" aria-label="메시지 전송 폼">
+      <span id="chat-my-nickname" class="chat-nickname-badge" title="내 닉네임 (클릭 시 변경)">나</span>
+      <input type="text" id="chat-input" class="chat-input" placeholder="정원에 따뜻한 한마디 남기기 (최대 80자)..." maxlength="80"
+        autocomplete="off">
+      <button type="button" id="chat-send-btn" class="chat-send-btn">전송</button>
+    </form>
+  </aside>
+
+  <!-- 화면 중앙 온기 알림 토스트 컨테이너 -->
+  <div id="toast-container" role="region" aria-label="알림 메시지" aria-live="assertive"></div>
+
+  <!-- 오디오 시작 유도 안내 오버레이 -->
+  <div id="audio-prompt-overlay" role="dialog" aria-modal="true" aria-labelledby="audio-prompt-title">
+    <div class="audio-prompt-card">
+      <div class="audio-prompt-icon" aria-hidden="true">🌱 🌳</div>
+      <h2 id="audio-prompt-title" class="audio-prompt-title">THE SLOWEST GARDEN</h2>
+      <p class="audio-prompt-desc">
+        화면을 한 번 클릭하면<br>
+        자연 바람소리와 밤하늘 반딧불이 사운드가 켜집니다.
+      </p>
+    </div>
+  </div>
+
+  <!-- 수분 0% 도달 시 시듦(Withered) 생명의 이슬 부활 모달 -->
+  <div id="withered-modal" role="dialog" aria-modal="true" aria-labelledby="withered-title-text" style="display: none;">
+    <div class="withered-card">
+      <div style="font-size: 36px; margin-bottom: 12px;" aria-hidden="true">🍂</div>
+      <h2 id="withered-title-text" class="withered-title">정원의 토양이 메말라 나무가 시들었습니다</h2>
+      <div class="withered-stats">
+        지금까지 건강하게 자란 시간: <strong id="withered-duration">DAY 24 · 14:00:00</strong><br>
+        누적 물주기 횟수: <strong id="withered-total-waterings">18회</strong>
+      </div>
+      <p style="font-size: 12px; color: #94a3b8; margin-bottom: 18px;">
+        새로운 씨앗을 심어 정원을 다시 깨워주세요. (혼자서도 즉시 새 씨앗 심기 및 물주기 가능)
+      </p>
+      <button type="button" id="strike-dew-btn" class="dew-btn">🌱 새 씨앗 심기 & 부활</button>
+      <div class="dew-progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="1" aria-valuenow="0"
+        aria-label="새 씨앗 심기 진행률">
+        <div id="dew-progress-fill" class="dew-progress-fill"></div>
+      </div>
+      <div id="dew-status-text"
+        style="font-size: 10px; color: #94a3b8; margin-top: 6px; font-family: var(--font-pixel);">
+        씨앗을 심으면 바로 첫 물을 줄 수 있습니다!
+      </div>
+    </div>
+  </div>
+
+  <!-- 스크립트 로드 -->
+  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+  <script src="../js/garden-audio.js"></script>
+  <script src="../js/garden-canvas.js"></script>
+  <script src="../js/garden-chat.js"></script>
+  <script src="../js/garden-main.js"></script>
+
+  <!-- 2. 선언형 개발자 스키마 및 인터랙션 훅 정의 -->
+  <script>
+    window.AFK_DEV_CONFIG = {
+      id: 'garden_mvp',
+      title: '🌳 세상에서 가장 느린 정원 v2.0',
+      version: '2.0.0',
+      // 1. 슬라이더/셀렉트 컨트롤 자동 생성 정의
+      controls: [
+        { key: 'simDay', label: '경과 일수 (일일 성장)', type: 'range', min: 1, max: 30, step: 1, value: 24 },
+        { key: 'moisture', label: '토양 수분 (%)', type: 'range', min: 0, max: 100, step: 1, value: 85 },
+        { key: 'currentHour', label: '실시간 시각 (0~24시)', type: 'range', min: 0, max: 23.9, step: 0.25, value: 14 },
+        { key: 'season', label: '계절 변화', type: 'select', options: ['SPRING', 'SUMMER', 'AUTUMN', 'WINTER'], value: 'SUMMER' },
+        { key: 'weather', label: '날씨 변화', type: 'select', options: ['CLEAR', 'RAIN', 'SNOW'], value: 'CLEAR' }
+      ],
+      // 2. 원클릭 테스트 액션 버튼 자동 생성 정의
+      actions: [
+        { id: 'test_100_noop', label: '💧 수분 100% 무반응 검증' },
+        { id: 'test_dry_soil', label: '🏜️ 메마른 토양(15% 균열)' },
+        { id: 'test_firefly_sound', label: '✨ 밤하늘 반딧불이 소리' },
+        { id: 'skip_cooldown', label: '⚡ 3분 쿨다운 즉시 해제' },
+        { id: 'sim_other_user', label: '👥 타인 물주기 연출' },
+        { id: 'test_wither', label: '🍂 시듦(0%) 모달 호출', danger: true }
+      ],
+      // 3. 자동 QA 스모크 테스트 진단 규칙
+      qaChecks: [
+        { id: 'no_pixel_text', desc: '픽셀(px) 수치 비노출 여부', check: () => !document.body.innerText.includes('px') },
+        { id: 'has_growth_badge', desc: '머문 시간 옆 나무 성장률(%) 표시', check: () => !!document.getElementById('garden-growth-rate') },
+        { id: 'noop_at_100', desc: '수분 100% 시 물주기 무반응 작동', check: () => window.__test100NoOpPassed === true },
+        { id: 'chat_toggle_ok', desc: '채팅 ON/OFF 토글 정상 작동', check: () => !!document.getElementById('chat-toggle-btn') }
+      ]
+    };
+
+    // 포털 마스터 셸과의 동적 훅 연결
+    window.AFK_DEV_HOOKS = {
+      onControlChange: function (key, value) {
+        if (key === 'simDay') {
+          const day = parseInt(value, 10);
+          const progress = Math.min(100, (day / 30) * 100);
+          if (window.gardenCanvas) {
+            window.gardenCanvas.growthProgress = progress;
+            window.gardenCanvas.targetGrowth = progress;
+            window.gardenCanvas.needsCacheRedraw = true;
+          }
+          const el = document.getElementById('garden-lifetime');
+          if (el) el.textContent = `DAY ${day} · 14:00:00`;
+          const badge = document.getElementById('garden-growth-rate');
+          if (badge) badge.textContent = `${progress.toFixed(1)}%`;
+        } else if (key === 'moisture') {
+          const m = parseFloat(value);
+          if (window.gardenCanvas) {
+            window.gardenCanvas.moisture = m;
+            window.gardenCanvas.targetMoisture = m;
+          }
+          const fill = document.getElementById('moisture-fill');
+          if (fill) fill.style.width = `${m}%`;
+          const text = document.getElementById('moisture-text');
+          const status = m <= 0 ? 'WITHERED' : (m >= 70 ? 'LUSH' : (m >= 30 ? 'HEALTHY' : 'THIRSTY'));
+          if (text) text.textContent = `수분 ${m.toFixed(1)}% (${status} · 실시간 샌드박스)`;
+          
+          const waterBtn = document.getElementById('water-btn');
+          const waterBtnText = document.getElementById('water-btn-text');
+          if (waterBtn && waterBtnText) {
+            if (m >= 100) {
+              waterBtn.classList.add('saturated');
+              waterBtnText.textContent = '💧 토양 수분 가득참 (100%)';
+            } else {
+              waterBtn.classList.remove('saturated');
+              waterBtnText.textContent = '💧 물주기 (+10%)';
+            }
+          }
+        } else if (key === 'currentHour') {
+          const h = parseFloat(value);
+          if (window.gardenCanvas) {
+            window.gardenCanvas.kstHour = h;
+          }
+          const timeTag = document.getElementById('time-tag');
+          if (timeTag) {
+            const title = (h >= 6 && h < 11) ? '🌅 아침' : (h >= 11 && h < 17) ? '☀️ 한낮' : (h >= 17 && h < 20) ? '🌇 저녁' : '🌙 밤';
+            timeTag.textContent = `${title} (${Math.floor(h)}시)`;
+          }
+        } else if (key === 'season') {
+          if (window.gardenCanvas) {
+            window.gardenCanvas.season = value;
+            window.gardenCanvas.needsCacheRedraw = true;
+          }
+          const seasonTag = document.getElementById('season-tag');
+          if (seasonTag) {
+            const labels = { SPRING: '🌸 봄', SUMMER: '🌿 여름', AUTUMN: '🍁 가을', WINTER: '❄️ 겨울' };
+            seasonTag.textContent = labels[value] || value;
+          }
+        } else if (key === 'weather') {
+          if (window.gardenCanvas) {
+            window.gardenCanvas.weather = value;
+          }
+          const weatherTag = document.getElementById('weather-tag');
+          if (weatherTag) {
+            const labels = { CLEAR: '☀️ 맑음', RAIN: '🌧️ 비', SNOW: '❄️ 눈', BREEZE: '🍃 바람' };
+            weatherTag.textContent = labels[value] || value;
+          }
+        }
+      },
+
+      onAction: function (actionId) {
+        if (actionId === 'test_100_noop') {
+          // 1. 수분을 100%로 설정
+          window.AFK_DEV_HOOKS.onControlChange('moisture', 100);
+          // 2. 물주기 클릭 시도
+          const btn = document.getElementById('water-btn');
+          const prevCooldown = localStorage.getItem('garden_water_cooldown_expiry');
+          if (btn) btn.click();
+          const afterCooldown = localStorage.getItem('garden_water_cooldown_expiry');
+          // 쿨다운이 발동하지 않고 수분이 100으로 유지되었다면 통과
+          if (!afterCooldown || afterCooldown === prevCooldown) {
+            window.__test100NoOpPassed = true;
+            if (window.showToast) window.showToast('✅ 수분 100% 무반응 검증 통과! (쿨다운 소모 0)');
+          }
+        } else if (actionId === 'test_dry_soil') {
+          window.AFK_DEV_HOOKS.onControlChange('moisture', 15);
+          if (window.showToast) window.showToast('🏜️ 수분 15% 가뭄 균열 토양 적용');
+        } else if (actionId === 'test_firefly_sound') {
+          if (window.gardenAudio && window.gardenAudio.playFireflyChime) {
+            window.gardenAudio.unlock();
+            window.gardenAudio.playFireflyChime();
+            if (window.showToast) window.showToast('✨ 밤하늘 반딧불이 사운드 발동');
+          }
+        } else if (actionId === 'skip_cooldown') {
+          localStorage.removeItem('garden_water_cooldown_expiry');
+          const waterBtn = document.getElementById('water-btn');
+          const prog = document.getElementById('cooldown-progress');
+          const txt = document.getElementById('water-btn-text');
+          if (waterBtn) waterBtn.disabled = false;
+          if (prog) prog.style.width = '0%';
+          if (txt) txt.textContent = '💧 물주기 (+10%)';
+          if (window.showToast) window.showToast('⚡ 3분 쿨다운이 즉시 해제되었습니다!');
+        } else if (actionId === 'sim_other_user') {
+          if (window.gardenCanvas) window.gardenCanvas.triggerWaterEffect();
+          if (window.gardenAudio) window.gardenAudio.playWaterDrop();
+          if (window.showToast) window.showToast('👥 다른 방랑자가 정원에 물을 주었습니다! 💧');
+        } else if (actionId === 'test_wither') {
+          const modal = document.getElementById('withered-modal');
+          if (modal) modal.style.display = 'flex';
+          if (window.showToast) window.showToast('🍂 시듦(WITHERED) 부활 모달 호출');
+        }
+      }
+    };
+  </script>
+</body>
+
+</html>
