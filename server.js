@@ -99,12 +99,12 @@ const logCooldowns = new Map();
 const waterCooldowns = new Map();
 const chatCooldowns = new Map();
 
-// 부활 의식 참여자
+// 부활 의식 참여자 (1명만 있어도 즉시 부활 가능)
 const resurrectionClicks = new Set();
-const FLINT_GOAL = 3;
+const FLINT_GOAL = 1;
 
 const dewClicks = new Set();
-const DEW_GOAL = 3;
+const DEW_GOAL = 1;
 
 // --- 영속 데이터 디렉토리 확인 및 로드 ---
 if (!fs.existsSync(DATA_DIR)) {
@@ -477,42 +477,38 @@ io.on('connection', (socket) => {
     io.emit('new_chat', chatItem);
   });
 
-  // 장작불 부활 의식: 부싯돌 치기
+  // 장작불 부활 의식: 부싯돌 치기 (1명만 있어도 즉시 재점화 및 장작 넣기 가능)
   socket.on('strike_flint', () => {
     if (state.status !== 'EXTINGUISHED') return;
 
-    resurrectionClicks.add(socket.id);
-    const currentFlintCount = resurrectionClicks.size;
+    state.fireLife = 65.0;
+    state.status = 'STEADY';
+    state.globalStartTime = Date.now();
+    resurrectionClicks.clear();
+    logCooldowns.clear(); // 쿨다운 초기화: 부활 즉시 장작 투입 가능
+    saveState();
 
     io.emit('flint_progress', {
-      current: currentFlintCount,
-      target: FLINT_GOAL
+      current: 1,
+      target: 1
     });
 
-    if (currentFlintCount >= FLINT_GOAL || (io.engine.clientsCount === 1 && currentFlintCount >= 1)) {
-      state.fireLife = 65.0;
-      state.status = 'STEADY';
-      state.globalStartTime = Date.now();
-      resurrectionClicks.clear();
-      saveState();
+    io.emit('fire_ignited', {
+      life: state.fireLife,
+      status: state.status,
+      globalStartTime: state.globalStartTime
+    });
 
-      io.emit('fire_ignited', {
-        life: state.fireLife,
-        status: state.status,
-        globalStartTime: state.globalStartTime
-      });
-
-      const igniteMsg = {
-        id: `sys_${Date.now()}`,
-        sender: '시스템',
-        message: '🔥 새로운 온기가 모여 불꽃이 다시 피어올랐습니다! (DAY 1 시작)',
-        timestamp: Date.now(),
-        isSystem: true
-      };
-      recentChats.push(igniteMsg);
-      io.emit('new_chat', igniteMsg);
-      console.log('[FIRE REBORN] 새로운 불꽃이 점화되었습니다!');
-    }
+    const igniteMsg = {
+      id: `sys_${Date.now()}`,
+      sender: '시스템',
+      message: '🔥 새로운 온기가 모여 불꽃이 다시 피어올랐습니다! (지금 바로 첫 장작을 넣어주세요)',
+      timestamp: Date.now(),
+      isSystem: true
+    };
+    recentChats.push(igniteMsg);
+    io.emit('new_chat', igniteMsg);
+    console.log('[FIRE REBORN] 1명 참여로 새로운 불꽃이 점화되었습니다!');
   });
 
   // 장작불 재동기화
@@ -591,41 +587,41 @@ io.on('connection', (socket) => {
     io.emit('new_garden_chat', chatItem);
   });
 
-  // 3. 시든 나무 부활 의식: 생명의 이슬 모으기
+  // 3. 시든 나무 부활 의식: 새 씨앗 심기 & 부활 (1명만 있어도 즉시 부활 및 물주기 가능)
   socket.on('strike_dew', () => {
     if (gardenState.status !== 'WITHERED') return;
 
-    dewClicks.add(socket.id);
-    const currentDewCount = dewClicks.size;
+    gardenState.moisture = 75.0;
+    gardenState.status = 'LUSH';
+    gardenState.growthProgress = 0.0;
+    gardenState.activeGrowthSec = 0;
+    gardenState.plantedAt = Date.now();
+    dewClicks.clear();
+    waterCooldowns.clear(); // 쿨다운 초기화: 부활 즉시 물주기 가능
+    saveGardenState();
 
     io.emit('dew_progress', {
-      current: currentDewCount,
-      target: DEW_GOAL
+      current: 1,
+      target: 1
     });
 
-    if (currentDewCount >= DEW_GOAL || (io.engine.clientsCount === 1 && currentDewCount >= 1)) {
-      gardenState.moisture = 60.0;
-      gardenState.status = 'HEALTHY';
-      dewClicks.clear();
-      saveGardenState();
+    io.emit('garden_revived', {
+      moisture: gardenState.moisture,
+      status: gardenState.status,
+      growthProgress: 0.0,
+      activeGrowthSec: 0
+    });
 
-      io.emit('garden_revived', {
-        moisture: gardenState.moisture,
-        status: gardenState.status,
-        growthProgress: Number(gardenState.growthProgress.toFixed(4))
-      });
-
-      const reviveMsg = {
-        id: `sys_${Date.now()}`,
-        sender: '시스템',
-        message: '💧 생명의 이슬이 모여 시든 거목이 다시 푸르게 깨어났습니다!',
-        timestamp: Date.now(),
-        isSystem: true
-      };
-      recentGardenChats.push(reviveMsg);
-      io.emit('new_garden_chat', reviveMsg);
-      console.log('[GARDEN REVIVED] 정원이 부활했습니다!');
-    }
+    const reviveMsg = {
+      id: `sys_${Date.now()}`,
+      sender: '시스템',
+      message: '🌱 새로운 씨앗이 정원에 심어졌습니다! (지금 바로 첫 물을 줄 수 있습니다)',
+      timestamp: Date.now(),
+      isSystem: true
+    };
+    recentGardenChats.push(reviveMsg);
+    io.emit('new_garden_chat', reviveMsg);
+    console.log('[GARDEN REVIVED] 1명 참여로 정원에 새로운 씨앗이 심어졌습니다!');
   });
 
   // 4. 정원 탭 복귀 시 즉각 재동기화

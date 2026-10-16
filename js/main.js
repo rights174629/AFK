@@ -346,6 +346,13 @@ document.addEventListener('DOMContentLoaded', () => {
     if (extinctModal) extinctModal.style.display = 'none';
     document.getElementById('canvas-container').style.filter = 'none';
 
+    // 1명 부활 즉시 장작 투입 가능하도록 쿨다운 초기화
+    if (cooldownInterval) clearInterval(cooldownInterval);
+    remainingCooldownSec = 0;
+    if (addLogBtn) addLogBtn.disabled = false;
+    if (btnTextEl) btnTextEl.textContent = '🪵 장작 넣기 (+8%)';
+    if (cooldownProgressEl) cooldownProgressEl.style.width = '0%';
+
     globalFireStartTime = data.globalStartTime;
     if (window.fireCanvas) {
       window.fireCanvas.setTargetLife(data.life);
@@ -353,6 +360,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     if (window.fireAudio) window.fireAudio.updateVolumes(data.life);
 
-    showToast('새로운 불꽃이 피어올랐습니다! (DAY 1 시작)');
+    showToast('새로운 불꽃이 피어올랐습니다! (지금 바로 장작을 넣어주세요)');
   });
 });

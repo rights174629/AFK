@@ -454,10 +454,24 @@ document.addEventListener('DOMContentLoaded', () => {
     if (dewStatusText) dewStatusText.textContent = `생명의 이슬 모으는 중 (${data.current}/${data.target})`;
   });
 
-  // 부활 완료
+  // 부활 완료 (새 씨앗 심기 완료)
   socket.on('garden_revived', (data) => {
     if (witheredModal) witheredModal.style.display = 'none';
     document.getElementById('canvas-container').style.filter = 'none';
+
+    // 1명 부활 즉시 물주기가 가능하도록 쿨다운 초기화
+    if (cooldownInterval) clearInterval(cooldownInterval);
+    remainingCooldownSec = 0;
+    localStorage.removeItem('garden_water_cooldown_expiry');
+    if (cooldownProgressEl) cooldownProgressEl.style.width = '0%';
+    if (waterBtn) {
+      waterBtn.disabled = false;
+      waterBtn.classList.remove('saturated');
+    }
+    if (waterBtnTextEl) waterBtnTextEl.textContent = '💧 물주기 (+10%)';
+
+    activeGrowthSec = data.activeGrowthSec || 0;
+    plantedAt = Date.now();
 
     if (window.gardenCanvas) {
       window.gardenCanvas.triggerWaterEffect();
@@ -476,6 +490,6 @@ document.addEventListener('DOMContentLoaded', () => {
       activeGrowthSec
     });
 
-    showToast('💧 생명의 이슬이 모여 거목이 다시 싱그럽게 깨어났습니다!');
+    showToast('🌱 새로운 씨앗이 심어졌습니다! (지금 바로 첫 물을 줄 수 있습니다)');
   });
 });

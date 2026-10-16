@@ -1,11 +1,11 @@
 {
-  "moisture": 74.8736199999995,
-  "status": "LUSH",
-  "growthProgress": 2.4880459104938755,
-  "activeGrowthSec": 64490.15000000125,
+  "moisture": 65.92436499999917,
+  "status": "HEALTHY",
+  "growthProgress": 2.5124903549383384,
+  "activeGrowthSec": 65123.750000001724,
   "totalWaterings": 9,
   "plantedAt": 1760612200000,
   "weather": "CLEAR",
   "treeSeed": 20261015,
-  "lastSavedAt": 1792149256888
+  "lastSavedAt": 1792149858905
 }
